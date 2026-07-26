@@ -24,8 +24,9 @@ export class DehydrateResourceManagement {
     const dehydrateCompileDatabase = this.$RuntimeMaterielResourceDatabaseManager.getDehydrateCompileDatabase();
     await dehydrateCompileDatabase.read();
     if (dehydrateCompileDatabase.data["status"] !== "done") {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      return await this.getResourceListByAlias(alias);
+      // await new Promise((resolve) => setTimeout(resolve, 100));
+      // return await this.getResourceListByAlias(alias);
+      return false;
     };
     if (!dehydrateCompileDatabase.data["assets"]) {
       return false;

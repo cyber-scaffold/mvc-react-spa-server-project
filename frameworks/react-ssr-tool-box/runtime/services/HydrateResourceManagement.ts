@@ -24,8 +24,9 @@ export class HydrateResourceManagement {
     const hydrateCompileDatabase = this.$RuntimeMaterielResourceDatabaseManager.getHydrateCompileDatabase();
     await hydrateCompileDatabase.read();
     if (hydrateCompileDatabase.data["status"] !== "done") {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      return await this.getResourceListByAlias(alias);
+      // await new Promise((resolve) => setTimeout(resolve, 100));
+      // return await this.getResourceListByAlias(alias);
+      return false;
     };
     if (!hydrateCompileDatabase.data["assets"]) {
       return false;
