@@ -38,9 +38,6 @@ export class MakeServerApplication {
         if (error) {
           reject(error);
         } else {
-          if (stats.hasWarnings) {
-            console.log(stats.toString({ colors: true }));
-          };
           if (stats.hasErrors()) {
             console.log(stats.toString({ colors: true }));
           };
@@ -54,13 +51,10 @@ export class MakeServerApplication {
       watch: [path.resolve(assetsDirectoryPath, "./server.js")],
       script: path.resolve(assetsDirectoryPath, "./server.js")
     });
-    webpackDevelopmentCompiler.watch({ ignored: "**/node_modules/**" }, async (error, stats) => {
+    webpackDevelopmentCompiler.watch({}, async (error, stats) => {
       if (error) {
         console.log(error);
       } else {
-        if (stats.hasWarnings) {
-          console.log(stats.toString({ colors: true }));
-        };
         if (stats.hasErrors()) {
           console.log(stats.toString({ colors: true }));
         };
@@ -82,12 +76,7 @@ export class MakeServerApplication {
         if (error) {
           reject(error);
         } else {
-          if (stats.hasWarnings) {
-            console.log(stats.toString({ colors: true }));
-          };
-          if (stats.hasErrors()) {
-            console.log(stats.toString({ colors: true }));
-          };
+          console.log(stats.toString({ colors: true }));
           resolve(true);
         };
       });

@@ -58,9 +58,6 @@ export class MakeDehydrateResource {
       if (error) {
         console.log(error);
       } else {
-        if (stats.hasWarnings) {
-          console.log(stats.toString({ colors: true }));
-        };
         if (stats.hasErrors()) {
           console.log(stats.toString({ colors: true }));
         };
@@ -87,12 +84,7 @@ export class MakeDehydrateResource {
       if (error) {
         console.log(error);
       } else {
-        if (stats.hasWarnings) {
-          console.log(stats.toString({ colors: true }));
-        };
-        if (stats.hasErrors()) {
-          console.log(stats.toString({ colors: true }));
-        };
+        console.log(stats.toString({ colors: true }));
         const latestAssetsFileList = filterWebpackStats(stats.toJson({ all: false, assets: true, source: false, outputPath: true }));
         /** 在json数据库中保存资源信息 **/
         dehydrateCompileDatabase.data["assets"] = latestAssetsFileList;
