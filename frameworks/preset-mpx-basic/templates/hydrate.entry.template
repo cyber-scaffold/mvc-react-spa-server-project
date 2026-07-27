@@ -16,18 +16,7 @@ import RenderElement from "$$sourceCodeFilePath$$";
 
 type HydrateBootstrapType = {
   rootElement: Element,
-  dehydrateData: {
-    meta: {
-      hostname: string
-      platform: string
-      version: string
-      title: string
-      keywords: string
-      description: string,
-      structured: any
-    }
-    content: any
-  }
+  dehydrateData: any
 };
 
 export default function hydrateBootstrap(params: HydrateBootstrapType) {
