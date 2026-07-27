@@ -25,7 +25,12 @@ export class MakePublicDLLFile {
         if (error) {
           reject(error);
         } else {
-          // console.log(stats.toString({ colors: true }));
+          if (stats.hasWarnings) {
+            console.log(stats.toString({ colors: true }));
+          };
+          if (stats.hasErrors()) {
+            console.log(stats.toString({ colors: true }));
+          };
           resolve(true);
         };
       });

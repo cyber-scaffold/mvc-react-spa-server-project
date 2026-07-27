@@ -1,4 +1,5 @@
 import path from "path";
+import Queue from "queue";
 import nodemon from "nodemon";
 import { injectable, inject } from "inversify";
 
@@ -15,6 +16,8 @@ import type { Compiler } from "webpack";
  * **/
 @injectable()
 export class MakeServerApplication {
+
+  private webpackQueue = new Queue({ concurrency: 1, autostart: true });
 
   constructor (
     @inject(FrameworkConfigManager) private readonly $FrameworkConfigManager: FrameworkConfigManager,
@@ -35,11 +38,17 @@ export class MakeServerApplication {
         if (error) {
           reject(error);
         } else {
-          // console.log(stats.toString({ colors: true }));
+          if (stats.hasWarnings) {
+            console.log(stats.toString({ colors: true }));
+          };
+          if (stats.hasErrors()) {
+            console.log(stats.toString({ colors: true }));
+          };
           resolve(true);
         };
       });
     });
+    await this.$GenerateSwaggerDocsService.execute();
     nodemon({
       verbose: true,
       watch: [path.resolve(assetsDirectoryPath, "./server.js")],
@@ -49,8 +58,15 @@ export class MakeServerApplication {
       if (error) {
         console.log(error);
       } else {
-        // console.log(stats.toString({ colors: true }));
-        await this.$GenerateSwaggerDocsService.execute();
+        if (stats.hasWarnings) {
+          console.log(stats.toString({ colors: true }));
+        };
+        if (stats.hasErrors()) {
+          console.log(stats.toString({ colors: true }));
+        };
+        return this.webpackQueue.push(async () => {
+          await this.$GenerateSwaggerDocsService.execute();
+        });
       };
     });
   };
@@ -66,7 +82,12 @@ export class MakeServerApplication {
         if (error) {
           reject(error);
         } else {
-          console.log(stats.toString({ colors: true }));
+          if (stats.hasWarnings) {
+            console.log(stats.toString({ colors: true }));
+          };
+          if (stats.hasErrors()) {
+            console.log(stats.toString({ colors: true }));
+          };
           resolve(true);
         };
       });
