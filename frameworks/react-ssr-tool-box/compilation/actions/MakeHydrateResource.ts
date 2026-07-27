@@ -1,3 +1,4 @@
+import Queue from "queue";
 import pathExists from "path-exists";
 import { injectable, inject } from "inversify";
 
@@ -18,6 +19,8 @@ import type { MaterielCompilationInfoType } from "@/frameworks/react-ssr-tool-bo
  * **/
 @injectable()
 export class MakeHydrateResource {
+
+  private webpackQueue = new Queue({ concurrency: 1, autostart: true });
 
   constructor (
     @inject(CompilationMaterielResourceDatabaseManager) private readonly $CompilationMaterielResourceDatabaseManager: CompilationMaterielResourceDatabaseManager,
@@ -52,15 +55,17 @@ export class MakeHydrateResource {
     /** 生成编译对象 **/
     const webpackCompiler: Compiler = await this.$HydrateConfigManager.getWebpackDevelopmentCompiler();
     /** 开启一个编译对象 **/
-    webpackCompiler.watch({ ignored: "**/node_modules/**", aggregateTimeout: 2000, poll: 1000 }, async (error, stats) => {
+    webpackCompiler.watch({}, (error, stats) => {
       if (error) {
         console.log(error);
       } else {
-        // console.log(stats.toString({ colors: true }));
-        const latestAssetsFileList = filterWebpackStats(stats.toJson({ all: false, assets: true, source: false, outputPath: true }));
-        /** 在json数据库中保存资源信息 **/
-        hydrateCompileDatabase.data["assets"] = latestAssetsFileList;
-        await hydrateCompileDatabase.write();
+        return this.webpackQueue.push(async () => {
+          // console.log(stats.toString({ colors: true }));
+          const latestAssetsFileList = filterWebpackStats(stats.toJson({ all: false, assets: true, source: false, outputPath: true }));
+          /** 在json数据库中保存资源信息 **/
+          hydrateCompileDatabase.data["assets"] = latestAssetsFileList;
+          await hydrateCompileDatabase.write();
+        });
       };
     });
   };

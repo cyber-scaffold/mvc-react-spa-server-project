@@ -1,3 +1,4 @@
+import Queue from "queue";
 import pathExists from "path-exists";
 import { injectable, inject } from "inversify";
 
@@ -18,6 +19,8 @@ import type { MaterielCompilationInfoType } from "@/frameworks/react-ssr-tool-bo
  * **/
 @injectable()
 export class MakeDehydrateResource {
+
+  private webpackQueue = new Queue({ concurrency: 1, autostart: true });
 
   constructor (
     @inject(CompilationMaterielResourceDatabaseManager) private readonly $CompilationMaterielResourceDatabaseManager: CompilationMaterielResourceDatabaseManager,
@@ -51,15 +54,17 @@ export class MakeDehydrateResource {
     await dehydrateCompileDatabase.write();
     /** 获取开发环境下的编译对象 **/
     const webpackCompiler: Compiler = await this.$DehydrateConfigManager.getWebpackDevelopmentCompiler();
-    webpackCompiler.watch({ ignored: "**/node_modules/**", aggregateTimeout: 2000, poll: 1000 }, async (error, stats) => {
+    webpackCompiler.watch({}, (error, stats) => {
       if (error) {
         console.log(error);
       } else {
-        // console.log(stats.toString({ colors: true }));
-        const latestAssetsFileList = filterWebpackStats(stats.toJson({ all: false, assets: true, source: false, outputPath: true }));
-        /** 在json数据库中保存资源信息 **/
-        dehydrateCompileDatabase.data["assets"] = latestAssetsFileList;
-        await dehydrateCompileDatabase.write();
+        return this.webpackQueue.push(async () => {
+          // console.log(stats.toString({ colors: true }));
+          const latestAssetsFileList = filterWebpackStats(stats.toJson({ all: false, assets: true, source: false, outputPath: true }));
+          /** 在json数据库中保存资源信息 **/
+          dehydrateCompileDatabase.data["assets"] = latestAssetsFileList;
+          await dehydrateCompileDatabase.write();
+        });
       };
     });
   };
