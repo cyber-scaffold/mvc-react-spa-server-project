@@ -1,3 +1,4 @@
+import os from "os";
 import { injectable, inject } from "inversify";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 
@@ -34,6 +35,12 @@ export class CssLoaderConfigManager {
         modules: false,
         sourceMap: true,
         esModule: false,
+      }
+    }, {
+      loader: "thread-loader",
+      options: {
+        poolRespawn: false,
+        workers: os.cpus().length > 2 ? os.cpus().length - 1 : os.cpus().length
       }
     }];
   };
@@ -72,6 +79,12 @@ export class CssLoaderConfigManager {
           config: true
         },
         sourceMap: true
+      }
+    }, {
+      loader: "thread-loader",
+      options: {
+        poolRespawn: false,
+        workers: os.cpus().length > 2 ? os.cpus().length - 1 : os.cpus().length
       }
     }];
   };

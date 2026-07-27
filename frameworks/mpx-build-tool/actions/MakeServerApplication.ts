@@ -35,7 +35,7 @@ export class MakeServerApplication {
         if (error) {
           reject(error);
         } else {
-          console.log(stats.toString({ colors: true }));
+          // console.log(stats.toString({ colors: true }));
           resolve(true);
         };
       });
@@ -49,7 +49,7 @@ export class MakeServerApplication {
       if (error) {
         console.log(error);
       } else {
-        console.log(stats.toString({ colors: true }));
+        // console.log(stats.toString({ colors: true }));
         await this.$GenerateSwaggerDocsService.execute();
       };
     });

@@ -1,3 +1,4 @@
+import os from "os";
 import path from "path";
 import { injectable, inject } from "inversify";
 
@@ -17,6 +18,12 @@ export class ScriptLoaderConfigManger {
   private async getNodeModulesRules() {
     return [{
       loader: "esbuild-loader"
+    }, {
+      loader: "thread-loader",
+      options: {
+        poolRespawn: false,
+        workers: os.cpus().length > 2 ? os.cpus().length - 1 : os.cpus().length
+      }
     }];
   };
 

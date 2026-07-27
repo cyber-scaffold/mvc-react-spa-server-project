@@ -39,20 +39,9 @@ export class HydrateConfigManager {
    * 最基础的webpack编译配置
    * **/
   public async getBasicConfig(): Promise<Configuration> {
-    const { projectDirectoryPath, extractResourceDirectoryName, hydrateResourceDirectoryPath } = await this.$CompilationConfigManager.getRuntimeConfig();
+    const { projectDirectoryPath } = await this.$CompilationConfigManager.getRuntimeConfig();
     return {
       entry: this.$ConvertHydrateEntryFile.getWebpackEntryPoints(),
-      output: {
-        clean: true,
-        path: hydrateResourceDirectoryPath,
-        devtoolModuleFilenameTemplate: "[absolute-resource-path]",
-        filename: (pathData: PathData) => `index-${pathData.chunk.name}-hydrate-[contenthash].js`,
-        library: {
-          type: "window",
-          export: "default",
-          name: "hydrateBootstrap"
-        },
-      },
       resolve: {
         extensions: [".ts", ".tsx", ".js", ".jsx"],
         alias: {
@@ -82,12 +71,7 @@ export class HydrateConfigManager {
           materielResourceDatabaseManager: this.$CompilationMaterielResourceDatabaseManager
         }),
         new DefinePlugin({
-          "process.env.RESOURCE_TYPE": JSON.stringify("hydrate"),
-          "process.env.NODE_ENV": "window._INJECT_RUNTIME_FROM_SERVER_.env.NODE_ENV"
-        }),
-        new MiniCssExtractPlugin({
-          linkType: "text/css",
-          filename: (pathData: PathData) => `../${extractResourceDirectoryName}/index-${pathData.chunk.name}-hydrate-[contenthash].css`
+          "process.env.RESOURCE_TYPE": JSON.stringify("hydrate")
         })
       ]
     };
@@ -97,10 +81,28 @@ export class HydrateConfigManager {
    * 开发模式下的webpack配置
    * **/
   public async getWebpackDevelopmentCompiler(): Promise<Compiler> {
+    const { extractResourceDirectoryName, hydrateResourceDirectoryPath } = await this.$CompilationConfigManager.getRuntimeConfig();
     const basicConfig: Configuration = await this.getBasicConfig();
     const webpackCompiler = webpack(merge<Configuration>(basicConfig, {
       mode: "development",
-      devtool: "source-map"
+      devtool: "source-map",
+      output: {
+        clean: true,
+        path: hydrateResourceDirectoryPath,
+        devtoolModuleFilenameTemplate: "[absolute-resource-path]",
+        filename: (pathData: PathData) => `index-${pathData.chunk.name}-hydrate.js`,
+        library: {
+          type: "window",
+          export: "default",
+          name: "hydrateBootstrap"
+        },
+      },
+      plugins: [
+        new MiniCssExtractPlugin({
+          linkType: "text/css",
+          filename: (pathData: PathData) => `../${extractResourceDirectoryName}/index-${pathData.chunk.name}-hydrate.css`
+        })
+      ]
     }));
     await this.$ConvertHydrateEntryFile.mountWithWebpackCompiler(webpackCompiler);
     return webpackCompiler;
@@ -110,11 +112,27 @@ export class HydrateConfigManager {
    * 生产模式下的webpack配置
    * **/
   public async getWebpackProductionCompiler(): Promise<Compiler> {
+    const { extractResourceDirectoryName, hydrateResourceDirectoryPath } = await this.$CompilationConfigManager.getRuntimeConfig();
     const basicConfig: Configuration = await this.getBasicConfig();
     const webpackCompiler = webpack(merge<Configuration>(basicConfig, {
       mode: "none",
       devtool: false,
+      output: {
+        clean: true,
+        path: hydrateResourceDirectoryPath,
+        devtoolModuleFilenameTemplate: "[absolute-resource-path]",
+        filename: (pathData: PathData) => `index-${pathData.chunk.name}-hydrate-[contenthash].js`,
+        library: {
+          type: "window",
+          export: "default",
+          name: "hydrateBootstrap"
+        },
+      },
       plugins: [
+        new MiniCssExtractPlugin({
+          linkType: "text/css",
+          filename: (pathData: PathData) => `../${extractResourceDirectoryName}/index-${pathData.chunk.name}-hydrate-[contenthash].css`
+        }),
         new SourceMapDevToolPlugin({
           test: /\.(js|css|less|scss|sass)($|\?)/i,
           filename: `../prod-source-maps/[base].map`, // 这里的 [file] 是指原文件名（如 main.js 或 main.css）

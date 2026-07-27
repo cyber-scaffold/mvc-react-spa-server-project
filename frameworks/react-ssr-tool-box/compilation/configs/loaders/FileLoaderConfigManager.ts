@@ -1,3 +1,4 @@
+import os from "os";
 import { injectable, inject } from "inversify";
 
 import { IOCContainer } from "@/frameworks/react-ssr-tool-box/compilation/cores/IOCContainer";
@@ -35,6 +36,12 @@ export class FileLoaderConfigManager {
           return `[name]-${filePathContentHash(resourcePath)}-[contenthash].[ext]`;
         }
       }
+    }, {
+      loader: "thread-loader",
+      options: {
+        poolRespawn: false,
+        workers: os.cpus().length > 2 ? os.cpus().length - 1 : os.cpus().length
+      }
     }];
   };
 
@@ -53,6 +60,12 @@ export class FileLoaderConfigManager {
           return `[name]-${filePathContentHash(resourcePath)}-[contenthash].[ext]`;
         }
       }
+    }, {
+      loader: "thread-loader",
+      options: {
+        poolRespawn: false,
+        workers: os.cpus().length > 2 ? os.cpus().length - 1 : os.cpus().length
+      }
     }];
   };
 
@@ -70,6 +83,12 @@ export class FileLoaderConfigManager {
         name: (resourcePath: string) => {
           return `[name]-${filePathContentHash(resourcePath)}-[contenthash].[ext]`;
         }
+      }
+    }, {
+      loader: "thread-loader",
+      options: {
+        poolRespawn: false,
+        workers: os.cpus().length > 2 ? os.cpus().length - 1 : os.cpus().length
       }
     }];
   };

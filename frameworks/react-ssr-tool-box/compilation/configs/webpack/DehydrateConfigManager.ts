@@ -42,19 +42,10 @@ export class DehydrateConfigManager {
    * 最基础的webpack编译配置
    * **/
   public async getBasicConfig(): Promise<Configuration> {
-    const { projectDirectoryPath, extractResourceDirectoryName, dehydrateResourceDirectoryPath } = this.$CompilationConfigManager.getRuntimeConfig();
+    const { projectDirectoryPath } = this.$CompilationConfigManager.getRuntimeConfig();
     return {
       entry: this.$ConvertDehydrateEntryFile.getWebpackEntryPoints(),
       target: "node",
-      output: {
-        clean: true,
-        path: dehydrateResourceDirectoryPath,
-        devtoolModuleFilenameTemplate: "[absolute-resource-path]",
-        filename: (pathData: PathData) => `index-${pathData.chunk.name}-dehydrate-[contenthash].js`,
-        library: {
-          type: "commonjs"
-        }
-      },
       resolve: {
         extensions: [".ts", ".tsx", ".js", ".jsx"],
         alias: {
@@ -89,11 +80,6 @@ export class DehydrateConfigManager {
         }),
         new DefinePlugin({
           "process.env.RESOURCE_TYPE": JSON.stringify("dehydrate")
-        }),
-        new MiniCssExtractPlugin({
-          runtime: false,
-          linkType: false,
-          filename: (pathData: PathData) => `../${extractResourceDirectoryName}/index-${pathData.chunk.name}-dehydrate-[contenthash].css`
         })
       ]
     };
@@ -103,10 +89,27 @@ export class DehydrateConfigManager {
    * 开发模式下的webpack配置
    * **/
   public async getWebpackDevelopmentCompiler(): Promise<Compiler> {
+    const { dehydrateResourceDirectoryPath, extractResourceDirectoryName } = this.$CompilationConfigManager.getRuntimeConfig();
     const basicConfig: Configuration = await this.getBasicConfig();
     const webpackCompiler = webpack(merge<Configuration>(basicConfig, {
       mode: "development",
-      devtool: "source-map"
+      devtool: "source-map",
+      output: {
+        clean: true,
+        path: dehydrateResourceDirectoryPath,
+        devtoolModuleFilenameTemplate: "[absolute-resource-path]",
+        filename: (pathData: PathData) => `index-${pathData.chunk.name}-dehydrate.js`,
+        library: {
+          type: "commonjs"
+        }
+      },
+      plugins: [
+        new MiniCssExtractPlugin({
+          runtime: false,
+          linkType: false,
+          filename: (pathData: PathData) => `../${extractResourceDirectoryName}/index-${pathData.chunk.name}-dehydrate.css`
+        })
+      ]
     }));
     await this.$ConvertDehydrateEntryFile.mountWithWebpackCompiler(webpackCompiler);
     return webpackCompiler;
@@ -116,11 +119,26 @@ export class DehydrateConfigManager {
    * 生产模式下的webpack配置
    * **/
   public async getWebpackProductionCompiler(): Promise<Compiler> {
+    const { dehydrateResourceDirectoryPath, extractResourceDirectoryName } = this.$CompilationConfigManager.getRuntimeConfig();
     const basicConfig: Configuration = await this.getBasicConfig();
     const webpackCompiler = webpack(merge<Configuration>(basicConfig, {
       mode: "none",
       devtool: false,
+      output: {
+        clean: true,
+        path: dehydrateResourceDirectoryPath,
+        devtoolModuleFilenameTemplate: "[absolute-resource-path]",
+        filename: (pathData: PathData) => `index-${pathData.chunk.name}-dehydrate-[contenthash].js`,
+        library: {
+          type: "commonjs"
+        }
+      },
       plugins: [
+        new MiniCssExtractPlugin({
+          runtime: false,
+          linkType: false,
+          filename: (pathData: PathData) => `../${extractResourceDirectoryName}/index-${pathData.chunk.name}-dehydrate-[contenthash].css`
+        }),
         new SourceMapDevToolPlugin({
           test: /\.(js|css|less|scss|sass)($|\?)/i,
           filename: `../prod-source-maps/[base].map`, // 这里的 [file] 是指原文件名（如 main.js 或 main.css）

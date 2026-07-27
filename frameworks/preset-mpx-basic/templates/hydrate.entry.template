@@ -14,17 +14,22 @@ import { createRoot } from "react-dom/client";
 //@ts-ignore 这里需要忽略因为这里的绝对路径可能含有后缀名,默认情况下typescript不允许后缀名,所以需要让typescript忽略
 import RenderElement from "$$sourceCodeFilePath$$";
 
-export default function hydrateBootstrap() {
-  let rootElement;
-  if (typeof (window as any)._HYDRATE_MOUNT_ELEMENT_ == "string") {
-    rootElement = document.getElementById((window as any)._HYDRATE_MOUNT_ELEMENT_);
-  } else {
-    rootElement = (window as any)._HYDRATE_MOUNT_ELEMENT_;
-  };
-  //var HydrateElement=React.createElement(RenderElement,window._INJECTABLE_DEHYDRATE_CONTENT_);
-  //window._HYDRATE_MOUNT_ELEMENT_=createRoot(rootElement).render(HydrateElement);
+type HydrateBootstrapType = {
+  rootElement: Element,
+  dehydrateData: {
+    meta: {
+      hostname: string
+      platform: string
+      version: string
+      title: string
+      keywords: string
+      description: string,
+      structured: any
+    }
+    content: any
+  }
+};
 
-  (window as any)._HYDRATE_MOUNT_ELEMENT_ = createRoot(rootElement).render(
-    <RenderElement { ...(window as any)._INJECTABLE_DEHYDRATE_CONTENT_ } />
-  );
+export default function hydrateBootstrap(params: HydrateBootstrapType) {
+  createRoot(params.rootElement).render(<RenderElement {...params.dehydrateData} />);
 };
