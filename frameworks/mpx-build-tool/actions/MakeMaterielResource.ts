@@ -19,10 +19,8 @@ export class MakeMaterielResource {
   public async buildMaterielResourceByDevelopmentAndWatch() {
     const { projectDirectoryPath, assetsDirectoryName, dehydrateIncludePackageList, dehydrateExcludePackageList, materiels } = await this.$FrameworkConfigManager.getRuntimeConfig();
     await setCompileConfiguration({ projectDirectoryPath, assetsDirectoryName, dehydrateIncludePackageList, dehydrateExcludePackageList, hydratePreset: hydrateEntryFilePreset, dehydratePreset: dehydrateEntryFilePreset, materiels });
-    await Promise.all([
-      makeHydrateResource({ mode: "development", watch: true }),
-      makeDehydrateResource({ mode: "development", watch: true })
-    ]);
+    makeHydrateResource({ mode: "development", watch: true })
+    makeDehydrateResource({ mode: "development", watch: true })
   };
 
   public async buildMaterielResourceByProductionNotWatch() {
