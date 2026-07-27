@@ -58,9 +58,9 @@ export class MakeDehydrateResource {
       if (error) {
         console.log(error);
       } else {
+        // console.log(stats.toString({ colors: true }));
+        const latestAssetsFileList = JSON.parse(JSON.stringify(filterWebpackStats(stats.toJson({ all: false, assets: true, source: false, outputPath: true }))));
         return this.webpackQueue.push(async () => {
-          // console.log(stats.toString({ colors: true }));
-          const latestAssetsFileList = filterWebpackStats(stats.toJson({ all: false, assets: true, source: false, outputPath: true }));
           /** 在json数据库中保存资源信息 **/
           dehydrateCompileDatabase.data["assets"] = latestAssetsFileList;
           await dehydrateCompileDatabase.write();
